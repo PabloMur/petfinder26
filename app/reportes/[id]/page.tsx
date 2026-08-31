@@ -16,6 +16,7 @@ export default function ReportDetailPage() {
   const [contactRevealed, setContactRevealed] = useState(false);
   const [closing, setClosing] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [downloadingPoster, setDownloadingPoster] = useState(false);
 
   useEffect(() => {
     fetchReportDetail(id).then(setReport);
@@ -56,6 +57,17 @@ export default function ReportDetailPage() {
     setTimeout(() => setLinkCopied(false), 2000);
   }
 
+  async function handleDownloadPoster() {
+    if (!report) return;
+    setDownloadingPoster(true);
+    try {
+      const { downloadPoster } = await import("@/lib/pdf/poster");
+      await downloadPoster(report, window.location.href);
+    } finally {
+      setDownloadingPoster(false);
+    }
+  }
+
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 px-5 pb-10 pt-4">
       <Link href="/mapa" aria-label="Volver al mapa">
@@ -73,6 +85,8 @@ export default function ReportDetailPage() {
           closing={closing}
           onCopyLink={copyLink}
           linkCopied={linkCopied}
+          onDownloadPoster={handleDownloadPoster}
+          downloadingPoster={downloadingPoster}
         />
       ) : (
         <VisitorView
@@ -127,6 +141,8 @@ function OwnerView({
   closing,
   onCopyLink,
   linkCopied,
+  onDownloadPoster,
+  downloadingPoster,
 }: {
   report: ReportDetail;
   title: string;
@@ -135,6 +151,8 @@ function OwnerView({
   closing: boolean;
   onCopyLink: () => void;
   linkCopied: boolean;
+  onDownloadPoster: () => void;
+  downloadingPoster: boolean;
 }) {
   return (
     <div className="flex flex-col gap-6">
@@ -156,6 +174,23 @@ function OwnerView({
         {report.description && <p className="text-[14px] text-ink-soft">{report.description}</p>}
       </div>
       <Tags report={report} />
+
+      <div className="flex items-center gap-3.5 rounded-2xl bg-surface-muted p-4">
+        <div className="flex h-[54px] w-[54px] flex-none items-center justify-center rounded-2xl bg-surface">
+          <Icon name="qr_code_2" size={26} className="text-primary" />
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="text-[14.5px] font-semibold">Cartel listo para imprimir</span>
+          <span className="text-[12.5px] text-ink-soft">A4 con foto, zona y QR al reporte</span>
+        </div>
+        <button
+          onClick={onDownloadPoster}
+          disabled={downloadingPoster}
+          className="flex-none rounded-xl bg-ink px-3.5 py-2.5 text-[12.5px] font-semibold text-white disabled:opacity-50"
+        >
+          {downloadingPoster ? "Generando…" : "Descargar PDF"}
+        </button>
+      </div>
 
       <div className="flex flex-col gap-2.5">
         <span className="text-[15px] font-semibold">Compartir</span>
