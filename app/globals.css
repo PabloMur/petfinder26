@@ -36,6 +36,20 @@ body {
   color: var(--color-ink);
 }
 
+/* Mapbox's default popup chrome fights our design system (mismatched
+   radius/shadow, an unstyled native close button) — strip it so our own
+   markup inside <Popup> fully controls the look; keep the little tip, it's
+   a useful pointer back to the pin. */
+.mapboxgl-popup-content {
+  padding: 0;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(43, 33, 28, 0.18);
+  overflow: hidden;
+}
+.mapboxgl-popup-close-button {
+  display: none;
+}
+
 .material-symbols-rounded {
   font-family: "Material Symbols Rounded";
   font-weight: normal;

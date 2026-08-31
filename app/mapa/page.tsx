@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { BottomNav } from "@/components/BottomNav";
 import { ReportCard, ReportPin } from "@/components/ReportCard";
-import { distanceMeters } from "@/lib/geo";
+import { distanceMeters, formatRelativeTime } from "@/lib/geo";
 import { fetchActiveReports, type ReportMapPoint } from "@/lib/supabase/reports";
 import { isDefaultFilters, useMapFilters, type StatusFilter } from "@/lib/store/map-filters";
 
@@ -115,17 +115,42 @@ export default function MapaPage() {
             latitude={selected.lat}
             anchor="bottom"
             offset={28}
+            closeButton={false}
             closeOnClick={false}
             onClose={() => setSelected(null)}
           >
-            <div className="min-w-[180px] p-1">
-              <p className="text-xs font-semibold text-ink-muted">
-                {selected.type === "lost" ? "PERDIDA" : "ENCONTRADA"}
-              </p>
-              <p className="text-sm font-semibold">
-                {selected.name ?? (selected.species === "dog" ? "Perro" : "Gato")}
-              </p>
-              <p className="text-xs text-ink-soft">{selected.address_label}</p>
+            <div className="relative w-[260px]">
+              <button
+                onClick={() => setSelected(null)}
+                aria-label="Cerrar"
+                className="absolute right-1.5 top-1.5 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-ink/50"
+              >
+                <Icon name="close" size={14} className="text-white" />
+              </button>
+              <Link href={`/reportes/${selected.id}`} className="flex gap-3 p-3">
+                {selected.photos[0] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={selected.photos[0]}
+                    alt=""
+                    className="h-16 w-16 flex-none rounded-2xl object-cover"
+                  />
+                ) : (
+                  <div className="h-16 w-16 flex-none rounded-2xl bg-[repeating-linear-gradient(135deg,#F2ECE3_0_7px,#E7DED2_7px_14px)]" />
+                )}
+                <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+                  <span className={`text-xs font-semibold ${selected.type === "lost" ? "text-lost" : "text-found"}`}>
+                    {selected.type === "lost" ? "PERDIDA" : "ENCONTRADA"} · {formatRelativeTime(selected.seen_at)}
+                  </span>
+                  <span className="truncate text-[15px] font-semibold leading-tight">
+                    {selected.name ?? (selected.species === "dog" ? "Perro" : selected.species === "cat" ? "Gato" : "Mascota")}
+                  </span>
+                  {selected.address_label && (
+                    <span className="truncate text-xs text-ink-soft">{selected.address_label}</span>
+                  )}
+                </div>
+                <Icon name="chevron_right" size={20} className="mt-1 flex-none text-ink-soft" />
+              </Link>
             </div>
           </Popup>
         )}
