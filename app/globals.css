@@ -50,6 +50,13 @@ body {
   display: none;
 }
 
+/* Tint the default Mapbox basemap toward our warm cream palette. Targets
+   the canvas specifically (not .mapboxgl-map) so markers/popups — separate
+   DOM overlays, not canvas pixels — keep their real brand colors. */
+.mapboxgl-canvas {
+  filter: sepia(0.7) saturate(0.75) hue-rotate(-8deg) brightness(1.02) contrast(0.97);
+}
+
 .material-symbols-rounded {
   font-family: "Material Symbols Rounded";
   font-weight: normal;
