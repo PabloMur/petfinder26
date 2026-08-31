@@ -36,3 +36,7 @@ export function ownsReport(reportId: string): boolean {
 export function getMyReportIds(): string[] {
   return Object.keys(getMap());
 }
+
+export function getMyClaimTokens(): string[] {
+  return Object.values(getMap());
+}
