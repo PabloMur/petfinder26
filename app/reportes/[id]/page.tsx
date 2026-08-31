@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { formatRelativeTime } from "@/lib/geo";
+import { isReportSaved, toggleSavedReport } from "@/lib/saved-reports";
 import { getClaimToken } from "@/lib/supabase/claim-token";
 import { closeReport, fetchReportDetail, type ReportDetail } from "@/lib/supabase/report-detail";
 
@@ -17,6 +18,7 @@ export default function ReportDetailPage() {
   const [closing, setClosing] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [downloadingPoster, setDownloadingPoster] = useState(false);
+  const [saved, setSaved] = useState(() => isReportSaved(id));
 
   useEffect(() => {
     fetchReportDetail(id).then(setReport);
@@ -70,9 +72,18 @@ export default function ReportDetailPage() {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 px-5 pb-10 pt-4">
-      <Link href="/mapa" aria-label="Volver al mapa">
-        <Icon name="arrow_back" size={24} />
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link href="/mapa" aria-label="Volver al mapa">
+          <Icon name="arrow_back" size={24} />
+        </Link>
+        <button
+          onClick={() => setSaved(toggleSavedReport(id))}
+          aria-label={saved ? "Quitar de guardados" : "Guardar reporte"}
+          aria-pressed={saved}
+        >
+          <Icon name="favorite" size={24} filled={saved} className={saved ? "text-primary" : "text-ink-faint"} />
+        </button>
+      </div>
 
       {report.status === "closed" && report.closed_reason === "reunion" ? (
         <ReunionView title={title} />
