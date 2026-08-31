@@ -127,7 +127,7 @@ export default function MapaPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar zona, raza o color"
-            className="flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-faint"
+            className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-faint"
           />
         </div>
 
