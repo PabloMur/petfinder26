@@ -175,6 +175,17 @@ function OwnerView({
       </div>
       <Tags report={report} />
 
+      {report.type === "lost" && (
+        <Link
+          href={`/reportes/${report.id}/avistajes`}
+          className="flex items-center gap-3.5 rounded-2xl border border-ink/[0.11] p-4"
+        >
+          <Icon name="local_fire_department" size={22} className="text-lost" />
+          <span className="flex-1 text-[14px] font-semibold">Ver mapa de avistajes</span>
+          <Icon name="chevron_right" size={20} className="text-ink-soft" />
+        </Link>
+      )}
+
       <div className="flex items-center gap-3.5 rounded-2xl bg-surface-muted p-4">
         <div className="flex h-[54px] w-[54px] flex-none items-center justify-center rounded-2xl bg-surface">
           <Icon name="qr_code_2" size={26} className="text-primary" />
@@ -263,9 +274,20 @@ function VisitorView({
           Este reporte ya no está activo.
         </p>
       ) : !revealed ? (
-        <button onClick={onReveal} className="h-14 w-full rounded-[18px] bg-primary text-[16px] font-semibold text-white">
-          Contactar
-        </button>
+        <div className="flex flex-col gap-2.5">
+          <button onClick={onReveal} className="h-14 w-full rounded-[18px] bg-primary text-[16px] font-semibold text-white">
+            Contactar
+          </button>
+          {report.type === "lost" && (
+            <Link
+              href={`/reportes/${report.id}/avistajes`}
+              className="flex h-14 items-center justify-center gap-2.5 rounded-[18px] border border-ink/[0.14] text-[15px] font-semibold"
+            >
+              <Icon name="visibility" size={20} />
+              Reportar que la vi
+            </Link>
+          )}
+        </div>
       ) : (
         <div className="flex flex-col gap-2.5">
           {whatsappHref && (
