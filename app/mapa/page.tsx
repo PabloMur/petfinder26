@@ -12,7 +12,7 @@ import { fetchActiveReports, type ReportMapPoint } from "@/lib/supabase/reports"
 import { isDefaultFilters, useMapFilters, type StatusFilter } from "@/lib/store/map-filters";
 
 const VICENTE_LOPEZ = { longitude: -58.49, latitude: -34.527 };
-const MAP_STYLES = ["mapbox://styles/mapbox/light-v11", "mapbox://styles/mapbox/streets-v12"];
+const MAP_STYLES = ["mapbox://styles/mapbox/streets-v12", "mapbox://styles/mapbox/light-v11"];
 const DATE_WINDOW_MS: Record<string, number> = { today: 86400e3, "7d": 7 * 86400e3, "30d": 30 * 86400e3 };
 
 export default function MapaPage() {

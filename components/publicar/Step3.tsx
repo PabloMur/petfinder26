@@ -102,7 +102,7 @@ export function Step3() {
           ref={mapRef}
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
           initialViewState={{ ...(location ?? DEFAULT_CENTER), zoom: 15 } as never}
-          mapStyle="mapbox://styles/mapbox/light-v11"
+          mapStyle="mapbox://styles/mapbox/streets-v12"
           style={{ width: "100%", height: "100%" }}
           onLoad={onMoveEnd}
           onMoveEnd={onMoveEnd}
