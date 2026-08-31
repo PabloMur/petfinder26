@@ -32,3 +32,7 @@ export function getClaimToken(reportId: string): string | null {
 export function ownsReport(reportId: string): boolean {
   return getClaimToken(reportId) !== null;
 }
+
+export function getMyReportIds(): string[] {
+  return Object.keys(getMap());
+}
