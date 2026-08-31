@@ -175,6 +175,15 @@ function OwnerView({
       </div>
       <Tags report={report} />
 
+      <Link
+        href={`/reportes/${report.id}/matches`}
+        className="flex items-center gap-3.5 rounded-2xl border-2 border-primary/30 bg-primary/[0.04] p-4"
+      >
+        <Icon name="join_inner" size={22} className="text-primary" />
+        <span className="flex-1 text-[14px] font-semibold">Ver posibles coincidencias</span>
+        <Icon name="chevron_right" size={20} className="text-ink-soft" />
+      </Link>
+
       {report.type === "lost" && (
         <Link
           href={`/reportes/${report.id}/avistajes`}
