@@ -3,16 +3,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Map as MapboxMap, Marker, Popup, type MapRef } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
+import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { BottomNav } from "@/components/BottomNav";
 import { ReportCard, ReportPin } from "@/components/ReportCard";
 import { distanceMeters } from "@/lib/geo";
 import { fetchActiveReports, type ReportMapPoint } from "@/lib/supabase/reports";
+import { isDefaultFilters, useMapFilters, type StatusFilter } from "@/lib/store/map-filters";
 
 const VICENTE_LOPEZ = { longitude: -58.49, latitude: -34.527 };
 const MAP_STYLES = ["mapbox://styles/mapbox/light-v11", "mapbox://styles/mapbox/streets-v12"];
-
-type StatusFilter = "all" | "lost" | "found";
+const DATE_WINDOW_MS: Record<string, number> = { today: 86400e3, "7d": 7 * 86400e3, "30d": 30 * 86400e3 };
 
 export default function MapaPage() {
   const mapRef = useRef<MapRef>(null);
@@ -20,7 +21,7 @@ export default function MapaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const filters = useMapFilters();
   const [selected, setSelected] = useState<ReportMapPoint | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [styleIndex, setStyleIndex] = useState(0);
@@ -32,10 +33,19 @@ export default function MapaPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // A stable "now" resolved once at mount — the date filter is day-grained,
+  // so re-deriving it from a fresh Date.now() on every filter change would
+  // buy imperceptible precision at the cost of an impure read during render.
+  const [now] = useState(() => Date.now());
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const cutoff = now - DATE_WINDOW_MS[filters.date];
     return reports.filter((r) => {
-      if (statusFilter !== "all" && r.type !== statusFilter) return false;
+      if (filters.status !== "all" && r.type !== filters.status) return false;
+      if (filters.species && r.species !== filters.species) return false;
+      if (filters.photoOnly && r.photos.length === 0) return false;
+      if (new Date(r.seen_at).getTime() < cutoff) return false;
       if (!q) return true;
       return (
         r.name?.toLowerCase().includes(q) ||
@@ -43,7 +53,7 @@ export default function MapaPage() {
         r.tags.some((t) => t.toLowerCase().includes(q))
       );
     });
-  }, [reports, query, statusFilter]);
+  }, [reports, query, filters.status, filters.species, filters.photoOnly, filters.date, now]);
 
   const withDistance = useMemo(() => {
     return filtered
@@ -51,8 +61,9 @@ export default function MapaPage() {
         report: r,
         distanceM: userLocation ? distanceMeters(userLocation, { lat: r.lat, lng: r.lng }) : null,
       }))
+      .filter((x) => x.distanceM === null || x.distanceM <= filters.radiusKm * 1000)
       .sort((a, b) => (a.distanceM ?? 0) - (b.distanceM ?? 0));
-  }, [filtered, userLocation]);
+  }, [filtered, userLocation, filters.radiusKm]);
 
   function locateMe() {
     if (!navigator.geolocation) return;
@@ -83,7 +94,7 @@ export default function MapaPage() {
           </Marker>
         )}
 
-        {filtered.map((r) => (
+        {withDistance.map(({ report: r }) => (
           <Marker
             key={r.id}
             longitude={r.lng}
@@ -129,6 +140,12 @@ export default function MapaPage() {
             placeholder="Buscar zona, raza o color"
             className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-faint"
           />
+          <Link href="/mapa/filtros" aria-label="Filtros" className="relative flex-none">
+            <Icon name="tune" size={21} className="text-primary" />
+            {!isDefaultFilters(filters) && (
+              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-primary" />
+            )}
+          </Link>
         </div>
 
         <div className="flex gap-2">
@@ -141,9 +158,9 @@ export default function MapaPage() {
           ).map((chip) => (
             <button
               key={chip.key}
-              onClick={() => setStatusFilter(chip.key)}
+              onClick={() => filters.set({ status: chip.key as StatusFilter })}
               className={`rounded-[20px] px-3.5 py-2 text-[13px] font-semibold shadow-[0_4px_12px_rgba(43,33,28,0.1)] ${
-                statusFilter === chip.key ? "bg-ink text-white" : "bg-surface text-ink"
+                filters.status === chip.key ? "bg-ink text-white" : "bg-surface text-ink"
               }`}
             >
               {chip.label}
