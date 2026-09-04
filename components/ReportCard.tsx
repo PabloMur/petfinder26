@@ -16,19 +16,30 @@ export function ReportCard({
   report,
   distanceM,
   onClick,
+  className = "",
 }: {
   report: ReportMapPoint;
   distanceM: number | null;
   onClick?: () => void;
+  className?: string;
 }) {
   const title = report.name ?? (report.species === "dog" ? "Perro" : report.species === "cat" ? "Gato" : "Mascota");
 
   return (
     <button
       onClick={onClick}
-      className="flex w-[250px] flex-none items-start gap-[11px] rounded-[18px] border border-ink/10 bg-surface p-[11px] text-left"
+      className={`flex w-[250px] flex-none items-start gap-[11px] rounded-[18px] border border-ink/10 bg-surface p-[11px] text-left ${className}`}
     >
-      <div className="h-[66px] w-[66px] flex-none rounded-[13px] bg-[repeating-linear-gradient(135deg,#F2ECE3_0_7px,#E7DED2_7px_14px)]" />
+      {report.photos[0] ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={report.photos[0]}
+          alt=""
+          className="h-[66px] w-[66px] flex-none rounded-[13px] object-cover"
+        />
+      ) : (
+        <div className="h-[66px] w-[66px] flex-none rounded-[13px] bg-[repeating-linear-gradient(135deg,#F2ECE3_0_7px,#E7DED2_7px_14px)]" />
+      )}
       <div className="flex min-w-0 flex-col gap-1">
         <span className={`text-xs font-semibold ${TYPE_COLOR[report.type]}`}>
           {TYPE_LABEL[report.type]} · {formatRelativeTime(report.seen_at)}

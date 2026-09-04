@@ -34,44 +34,50 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col justify-between px-6 py-8">
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center gap-2.5">
-          <div className="h-[30px] w-[30px] rotate-45 rounded-[50%_50%_50%_6px] bg-primary" />
-          <span className="text-[23px] font-bold tracking-tight">Pet Finder</span>
+    <div className="flex min-h-dvh flex-col justify-between px-6 py-8 lg:grid lg:grid-cols-[minmax(0,460px)_1fr] lg:items-stretch lg:justify-normal lg:gap-0 lg:px-0 lg:py-0">
+      <div className="flex flex-1 flex-col justify-between lg:justify-center lg:gap-10 lg:px-16 lg:py-12">
+        <div className="flex flex-col gap-6 lg:gap-8">
+          <div className="flex items-center gap-2.5">
+            <div className="h-[30px] w-[30px] rotate-45 rounded-[50%_50%_50%_6px] bg-primary" />
+            <span className="text-[23px] font-bold tracking-tight">Pet Finder</span>
+          </div>
+
+          <div className="flex h-[250px] items-center justify-center rounded-3xl bg-[repeating-linear-gradient(135deg,#F2ECE3_0_9px,#EBE2D6_9px_18px)] lg:hidden">
+            <Icon name="pets" size={40} className="text-ink-faint" />
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-pretty lg:text-[42px]">
+              Tu barrio busca con vos
+            </h1>
+            <p className="text-[15px] leading-relaxed text-ink-soft lg:max-w-[380px] lg:text-[16px]">
+              Necesitamos tu ubicación para mostrarte mascotas perdidas cerca y avisarte cuando aparezca una.
+            </p>
+          </div>
         </div>
 
-        <div className="flex h-[250px] items-center justify-center rounded-3xl bg-[repeating-linear-gradient(135deg,#F2ECE3_0_9px,#EBE2D6_9px_18px)]">
-          <Icon name="pets" size={40} className="text-ink-faint" />
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-pretty">
-            Tu barrio busca con vos
-          </h1>
-          <p className="text-[15px] leading-relaxed text-ink-soft">
-            Necesitamos tu ubicación para mostrarte mascotas perdidas cerca y avisarte cuando aparezca una.
-          </p>
+        <div className="flex flex-col gap-3 lg:max-w-[380px]">
+          <div className="flex items-center gap-3 rounded-2xl bg-surface-muted p-3.5">
+            <Icon name="my_location" size={22} className="text-primary" />
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold">Ubicación mientras usás la app</span>
+              <span className="text-[12.5px] text-ink-soft">Nunca publicamos tu dirección exacta</span>
+            </div>
+          </div>
+          <button
+            onClick={allowLocation}
+            className="h-14 w-full rounded-[18px] bg-primary text-[16px] font-semibold text-white transition-colors hover:bg-primary-hover"
+          >
+            Permitir ubicación
+          </button>
+          <button onClick={finish} className="h-12 w-full text-[15px] font-medium text-ink-muted">
+            Elegir zona a mano
+          </button>
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-3 rounded-2xl bg-surface-muted p-3.5">
-          <Icon name="my_location" size={22} className="text-primary" />
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold">Ubicación mientras usás la app</span>
-            <span className="text-[12.5px] text-ink-soft">Nunca publicamos tu dirección exacta</span>
-          </div>
-        </div>
-        <button
-          onClick={allowLocation}
-          className="h-14 w-full rounded-[18px] bg-primary text-[16px] font-semibold text-white"
-        >
-          Permitir ubicación
-        </button>
-        <button onClick={finish} className="h-12 w-full text-[15px] font-medium text-ink-muted">
-          Elegir zona a mano
-        </button>
+      <div className="hidden lg:flex lg:h-dvh lg:items-center lg:justify-center lg:bg-[repeating-linear-gradient(135deg,#F2ECE3_0_14px,#EBE2D6_14px_28px)]">
+        <Icon name="pets" size={140} className="text-ink-faint/60" />
       </div>
     </div>
   );

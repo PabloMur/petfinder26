@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BottomNav } from "@/components/BottomNav";
+import { SidebarNav } from "@/components/SidebarNav";
 import { Icon } from "@/components/Icon";
 import { formatRelativeTime } from "@/lib/geo";
 import { fetchMyAlerts, markAlertsRead, type Alert } from "@/lib/supabase/alerts";
@@ -46,31 +47,35 @@ export default function AlertasPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col pb-[78px]">
-      <div className="flex items-center justify-between px-5 pb-3.5 pt-6">
-        <span className="text-2xl font-semibold tracking-tight">Alertas</span>
-      </div>
+    <div className="flex min-h-dvh flex-col pb-[78px] lg:pb-10 lg:pl-64">
+      <SidebarNav />
 
-      {alerts === null ? (
-        <p className="py-10 text-center text-ink-soft">Cargando…</p>
-      ) : alerts.length === 0 ? (
-        <div className="flex flex-col items-center gap-2.5 px-5 py-16 text-center">
-          <Icon name="notifications" size={32} className="text-ink-faint" />
-          <span className="text-[15px] font-semibold">Sin novedades todavía</span>
-          <p className="max-w-[260px] text-[13.5px] leading-relaxed text-ink-soft">
-            Te vamos a avisar acá cuando haya una coincidencia con alguno de tus reportes.
-          </p>
+      <div className="flex flex-col lg:mx-auto lg:w-full lg:max-w-3xl">
+        <div className="flex items-center justify-between px-5 pb-3.5 pt-6 lg:px-10 lg:pt-10">
+          <span className="text-2xl font-semibold tracking-tight lg:text-3xl">Alertas</span>
         </div>
-      ) : (
-        [...groups.entries()].map(([label, items]) => (
-          <div key={label} className="flex flex-col">
-            <div className="px-5 pb-2.5 pt-1.5 text-xs font-semibold tracking-wide text-ink-faint">{label}</div>
-            {items.map((a) => (
-              <AlertRow key={a.id} alert={a} unread={unreadIds.has(a.id)} />
-            ))}
+
+        {alerts === null ? (
+          <p className="py-10 text-center text-ink-soft">Cargando…</p>
+        ) : alerts.length === 0 ? (
+          <div className="flex flex-col items-center gap-2.5 px-5 py-16 text-center">
+            <Icon name="notifications" size={32} className="text-ink-faint" />
+            <span className="text-[15px] font-semibold">Sin novedades todavía</span>
+            <p className="max-w-[260px] text-[13.5px] leading-relaxed text-ink-soft">
+              Te vamos a avisar acá cuando haya una coincidencia con alguno de tus reportes.
+            </p>
           </div>
-        ))
-      )}
+        ) : (
+          [...groups.entries()].map(([label, items]) => (
+            <div key={label} className="flex flex-col">
+              <div className="px-5 pb-2.5 pt-1.5 text-xs font-semibold tracking-wide text-ink-faint lg:px-10">{label}</div>
+              {items.map((a) => (
+                <AlertRow key={a.id} alert={a} unread={unreadIds.has(a.id)} />
+              ))}
+            </div>
+          ))
+        )}
+      </div>
 
       <BottomNav />
     </div>
@@ -80,7 +85,7 @@ export default function AlertasPage() {
 function AlertRow({ alert, unread }: { alert: Alert; unread: boolean }) {
   const meta = TYPE_META[alert.type];
   return (
-    <Link href={`/reportes/${alert.report_id}`} className="flex gap-3.5 px-5 py-3.5">
+    <Link href={`/reportes/${alert.report_id}`} className="flex gap-3.5 px-5 py-3.5 lg:px-10">
       <div className={`flex h-[46px] w-[46px] flex-none items-center justify-center rounded-2xl ${meta.bg}`}>
         <Icon name={meta.icon} size={23} className={meta.color} />
       </div>

@@ -94,8 +94,8 @@ export default function AvistajesPage() {
         </div>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 flex max-h-[55%] flex-col gap-3.5 rounded-t-[26px] bg-surface px-5 pb-8 pt-3.5 shadow-[0_-8px_30px_rgba(43,33,28,0.14)]">
-        <div className="mx-auto h-1 w-10 flex-none rounded-full bg-ink/[0.18]" />
+      <div className="absolute inset-x-0 bottom-0 flex max-h-[55%] flex-col gap-3.5 rounded-t-[26px] bg-surface px-5 pb-8 pt-3.5 shadow-[0_-8px_30px_rgba(43,33,28,0.14)] lg:inset-x-auto lg:bottom-5 lg:left-5 lg:w-[380px] lg:rounded-[26px] lg:pb-5">
+        <div className="mx-auto h-1 w-10 flex-none rounded-full bg-ink/[0.18] lg:hidden" />
         <span className="flex-none text-[17px] font-semibold">Dónde la vieron</span>
 
         <div className="flex-1 overflow-y-auto">

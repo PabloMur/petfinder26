@@ -6,6 +6,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { BottomNav } from "@/components/BottomNav";
+import { SidebarNav } from "@/components/SidebarNav";
 import { ReportCard, ReportPin } from "@/components/ReportCard";
 import { distanceMeters, formatRelativeTime } from "@/lib/geo";
 import { fetchActiveReports, type ReportMapPoint } from "@/lib/supabase/reports";
@@ -80,7 +81,77 @@ export default function MapaPage() {
   }
 
   return (
-    <div className="relative h-dvh w-full overflow-hidden">
+    <div className="relative h-dvh w-full overflow-hidden lg:flex lg:pl-64">
+      <SidebarNav />
+
+      <div className="contents lg:static lg:flex lg:h-dvh lg:w-[380px] lg:flex-none lg:flex-col lg:border-r lg:border-ink/[0.08] lg:bg-surface">
+        <div className="absolute inset-x-5 top-4 flex flex-col gap-2.5 lg:static lg:flex-none lg:gap-2.5 lg:px-4 lg:pb-3 lg:pt-5">
+          <div className="flex h-[52px] items-center gap-[11px] rounded-[18px] bg-surface px-4 shadow-[0_6px_20px_rgba(43,33,28,0.14)] lg:rounded-2xl lg:border lg:border-ink/10 lg:shadow-none">
+            <Icon name="search" size={21} className="text-ink-soft" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar zona, raza o color"
+              className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-faint"
+            />
+            <Link href="/mapa/filtros" aria-label="Filtros" className="relative flex-none">
+              <Icon name="tune" size={21} className="text-primary" />
+              {!isDefaultFilters(filters) && (
+                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-primary" />
+              )}
+            </Link>
+          </div>
+
+          <div className="flex gap-2">
+            {(
+              [
+                { key: "all", label: "Todo" },
+                { key: "lost", label: "Perdidas" },
+                { key: "found", label: "Encontradas" },
+              ] as const
+            ).map((chip) => (
+              <button
+                key={chip.key}
+                onClick={() => filters.set({ status: chip.key as StatusFilter })}
+                className={`rounded-[20px] px-3.5 py-2 text-[13px] font-semibold shadow-[0_4px_12px_rgba(43,33,28,0.1)] lg:shadow-none ${
+                  filters.status === chip.key ? "bg-ink text-white" : "bg-surface text-ink"
+                }`}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="absolute inset-x-0 bottom-[78px] flex flex-col gap-3 rounded-t-[26px] bg-surface px-5 pt-2.5 pb-3 shadow-[0_-8px_30px_rgba(43,33,28,0.14)] lg:static lg:min-h-0 lg:flex-1 lg:rounded-none lg:px-4 lg:pb-4 lg:pt-1 lg:shadow-none">
+          <div className="mx-auto h-1 w-10 rounded-full bg-ink/[0.18] lg:hidden" />
+          <div className="flex items-baseline justify-between">
+            <span className="text-[17px] font-semibold">
+              {loading ? "Cargando..." : `${withDistance.length} reportes cerca`}
+            </span>
+          </div>
+          {error && <p className="text-sm text-lost">No se pudieron cargar los reportes: {error}</p>}
+          {!loading && withDistance.length === 0 && !error && (
+            <p className="text-sm text-ink-soft">Todavía no hay reportes activos en esta zona.</p>
+          )}
+          <div className="flex gap-3 overflow-x-auto pb-1 lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto lg:pb-0">
+            {withDistance.map(({ report, distanceM }) => (
+              <ReportCard
+                key={report.id}
+                report={report}
+                distanceM={distanceM}
+                className="lg:w-full"
+                onClick={() => {
+                  setSelected(report);
+                  mapRef.current?.flyTo({ center: [report.lng, report.lat], zoom: 15, duration: 800 });
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="relative h-dvh flex-1 overflow-hidden">
       <MapboxMap
         ref={mapRef}
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
@@ -115,6 +186,7 @@ export default function MapaPage() {
             latitude={selected.lat}
             anchor="bottom"
             offset={28}
+            maxWidth="280px"
             closeButton={false}
             closeOnClick={false}
             onClose={() => setSelected(null)}
@@ -156,45 +228,7 @@ export default function MapaPage() {
         )}
       </MapboxMap>
 
-      <div className="absolute inset-x-5 top-4 flex flex-col gap-2.5">
-        <div className="flex h-[52px] items-center gap-[11px] rounded-[18px] bg-surface px-4 shadow-[0_6px_20px_rgba(43,33,28,0.14)]">
-          <Icon name="search" size={21} className="text-ink-soft" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar zona, raza o color"
-            className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-faint"
-          />
-          <Link href="/mapa/filtros" aria-label="Filtros" className="relative flex-none">
-            <Icon name="tune" size={21} className="text-primary" />
-            {!isDefaultFilters(filters) && (
-              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-primary" />
-            )}
-          </Link>
-        </div>
-
-        <div className="flex gap-2">
-          {(
-            [
-              { key: "all", label: "Todo" },
-              { key: "lost", label: "Perdidas" },
-              { key: "found", label: "Encontradas" },
-            ] as const
-          ).map((chip) => (
-            <button
-              key={chip.key}
-              onClick={() => filters.set({ status: chip.key as StatusFilter })}
-              className={`rounded-[20px] px-3.5 py-2 text-[13px] font-semibold shadow-[0_4px_12px_rgba(43,33,28,0.1)] ${
-                filters.status === chip.key ? "bg-ink text-white" : "bg-surface text-ink"
-              }`}
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="absolute right-5 top-[130px] flex flex-col gap-2.5">
+      <div className="absolute right-5 top-[130px] flex flex-col gap-2.5 lg:top-5">
         <button
           onClick={locateMe}
           aria-label="Mi ubicación"
@@ -210,31 +244,6 @@ export default function MapaPage() {
           <Icon name="layers" size={22} />
         </button>
       </div>
-
-      <div className="absolute inset-x-0 bottom-[78px] flex flex-col gap-3 rounded-t-[26px] bg-surface px-5 pt-2.5 pb-3 shadow-[0_-8px_30px_rgba(43,33,28,0.14)]">
-        <div className="mx-auto h-1 w-10 rounded-full bg-ink/[0.18]" />
-        <div className="flex items-baseline justify-between">
-          <span className="text-[17px] font-semibold">
-            {loading ? "Cargando..." : `${withDistance.length} reportes cerca`}
-          </span>
-        </div>
-        {error && <p className="text-sm text-lost">No se pudieron cargar los reportes: {error}</p>}
-        {!loading && withDistance.length === 0 && !error && (
-          <p className="text-sm text-ink-soft">Todavía no hay reportes activos en esta zona.</p>
-        )}
-        <div className="flex gap-3 overflow-x-auto pb-1">
-          {withDistance.map(({ report, distanceM }) => (
-            <ReportCard
-              key={report.id}
-              report={report}
-              distanceM={distanceM}
-              onClick={() => {
-                setSelected(report);
-                mapRef.current?.flyTo({ center: [report.lng, report.lat], zoom: 15, duration: 800 });
-              }}
-            />
-          ))}
-        </div>
       </div>
 
       <BottomNav />

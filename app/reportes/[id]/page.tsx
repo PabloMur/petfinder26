@@ -71,7 +71,7 @@ export default function ReportDetailPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 px-5 pb-10 pt-4">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 px-5 pb-10 pt-4 lg:max-w-2xl lg:justify-center lg:py-12">
       <div className="flex items-center justify-between">
         <Link href="/mapa" aria-label="Volver al mapa">
           <Icon name="arrow_back" size={24} />

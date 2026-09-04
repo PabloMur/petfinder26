@@ -17,8 +17,8 @@ export function StepShell({
   footer: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-surface">
-      <div className="flex items-center gap-3.5 px-5 pt-4">
+    <div className="flex min-h-dvh flex-col bg-surface lg:mx-auto lg:w-full lg:max-w-xl lg:justify-center lg:py-12">
+      <div className="flex items-center gap-3.5 px-5 pt-4 lg:px-0">
         <Link href={onBack ?? "/mapa"} aria-label={onBack ? "Volver" : "Cerrar"}>
           <Icon name={onBack ? "arrow_back" : "close"} size={24} />
         </Link>
@@ -33,15 +33,15 @@ export function StepShell({
         <span className="text-[13px] font-semibold text-ink-soft">{step}/3</span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-5 px-5 py-6">
+      <div className="flex flex-1 flex-col gap-5 px-5 py-6 lg:flex-none lg:px-0">
         <div className="flex flex-col gap-1.5">
-          <h2 className="text-[26px] font-semibold leading-tight tracking-tight">{title}</h2>
+          <h2 className="text-[26px] font-semibold leading-tight tracking-tight lg:text-[32px]">{title}</h2>
           {subtitle && <p className="text-[14.5px] leading-relaxed text-ink-soft">{subtitle}</p>}
         </div>
         {children}
       </div>
 
-      <div className="px-5 pb-8">{footer}</div>
+      <div className="px-5 pb-8 lg:px-0 lg:pb-0 lg:pt-4">{footer}</div>
     </div>
   );
 }

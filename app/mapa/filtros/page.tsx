@@ -28,8 +28,8 @@ export default function FiltrosPage() {
   const { status, species, radiusKm, date, photoOnly, set, reset } = useMapFilters();
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <div className="flex items-center gap-3 px-5 pt-5">
+    <div className="flex min-h-dvh flex-col lg:mx-auto lg:w-full lg:max-w-xl lg:justify-center lg:py-12">
+      <div className="flex items-center gap-3 px-5 pt-5 lg:px-0 lg:pt-0">
         <button onClick={() => router.back()} aria-label="Volver">
           <Icon name="arrow_back" size={24} />
         </button>
@@ -39,7 +39,7 @@ export default function FiltrosPage() {
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col gap-6 px-5 py-5">
+      <div className="flex flex-1 flex-col gap-6 px-5 py-5 lg:flex-none lg:px-0">
         <Section label="Estado">
           <ToggleRow options={STATUS_OPTIONS} value={status} onChange={(v) => set({ status: v })} />
         </Section>
@@ -91,7 +91,7 @@ export default function FiltrosPage() {
         </div>
       </div>
 
-      <div className="px-5 pb-8">
+      <div className="px-5 pb-8 lg:px-0 lg:pb-0 lg:pt-4">
         <button
           onClick={() => router.push("/mapa")}
           className="h-14 w-full rounded-[18px] bg-primary text-[16px] font-semibold text-white"

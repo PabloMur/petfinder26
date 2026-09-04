@@ -65,7 +65,7 @@ export default function MatchesPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 px-5 pb-10 pt-4">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 px-5 pb-10 pt-4 lg:max-w-2xl lg:justify-center lg:py-12">
       <div className="flex items-center gap-3">
         <Link href={`/reportes/${id}`} aria-label="Volver">
           <Icon name="arrow_back" size={22} />

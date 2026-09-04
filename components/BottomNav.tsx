@@ -15,7 +15,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 flex h-[78px] items-center justify-between border-t border-ink/[0.07] bg-surface px-2 pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed inset-x-0 bottom-0 z-20 flex h-[78px] items-center justify-between border-t border-ink/[0.07] bg-surface px-2 pb-[env(safe-area-inset-bottom)] lg:hidden">
       {NAV_ITEMS.slice(0, 2).map((item) => (
         <NavLink key={item.href} item={item} active={pathname.startsWith(item.href)} />
       ))}
