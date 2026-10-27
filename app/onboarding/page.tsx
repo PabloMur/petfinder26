@@ -1,13 +1,32 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/Icon";
 
 const ONBOARDED_KEY = "pet-finder:onboarded";
 
+const FEATURES = [
+  {
+    icon: "map",
+    title: "Mapa en vivo",
+    description: "Mirá mascotas perdidas y encontradas cerca tuyo, actualizadas en el momento.",
+  },
+  {
+    icon: "add_circle",
+    title: "Publicá un reporte",
+    description: "Subí fotos y datos en segundos si perdiste o encontraste una mascota.",
+  },
+  {
+    icon: "notifications",
+    title: "Alertas y coincidencias",
+    description: "Te avisamos apenas aparece un posible avistaje cerca tuyo.",
+  },
+];
+
 export default function OnboardingPage() {
   const router = useRouter();
+  const [step, setStep] = useState<"bienvenida" | "ubicacion">("bienvenida");
 
   // A repeat visitor briefly sees this screen before the redirect lands —
   // an acceptable trade-off for not needing a second render pass (and the
@@ -46,34 +65,68 @@ export default function OnboardingPage() {
             <Icon name="pets" size={40} className="text-ink-faint" />
           </div>
 
-          <div className="flex flex-col gap-3">
-            <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-pretty lg:text-[42px]">
-              Tu barrio busca con vos
-            </h1>
-            <p className="text-[15px] leading-relaxed text-ink-soft lg:max-w-[380px] lg:text-[16px]">
-              Necesitamos tu ubicación para mostrarte mascotas perdidas cerca y avisarte cuando aparezca una.
-            </p>
-          </div>
+          {step === "bienvenida" ? (
+            <div className="flex flex-col gap-3">
+              <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-pretty lg:text-[42px]">
+                Reencontrá mascotas perdidas en tu barrio
+              </h1>
+              <p className="text-[15px] leading-relaxed text-ink-soft lg:max-w-[380px] lg:text-[16px]">
+                Pet Finder conecta a vecinos para encontrar mascotas perdidas más rápido: mirá el mapa, publicá un
+                reporte o avisá si viste una.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-pretty lg:text-[42px]">
+                Tu barrio busca con vos
+              </h1>
+              <p className="text-[15px] leading-relaxed text-ink-soft lg:max-w-[380px] lg:text-[16px]">
+                Necesitamos tu ubicación para mostrarte mascotas perdidas cerca y avisarte cuando aparezca una.
+              </p>
+            </div>
+          )}
         </div>
 
-        <div className="flex flex-col gap-3 lg:max-w-[380px]">
-          <div className="flex items-center gap-3 rounded-2xl bg-surface-muted p-3.5">
-            <Icon name="my_location" size={22} className="text-primary" />
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold">Ubicación mientras usás la app</span>
-              <span className="text-[12.5px] text-ink-soft">Nunca publicamos tu dirección exacta</span>
+        {step === "bienvenida" ? (
+          <div className="flex flex-col gap-3 lg:max-w-[380px]">
+            <div className="flex flex-col gap-2.5">
+              {FEATURES.map((feature) => (
+                <div key={feature.title} className="flex items-center gap-3 rounded-2xl bg-surface-muted p-3.5">
+                  <Icon name={feature.icon} size={22} className="text-primary" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold">{feature.title}</span>
+                    <span className="text-[12.5px] text-ink-soft">{feature.description}</span>
+                  </div>
+                </div>
+              ))}
             </div>
+            <button
+              onClick={() => setStep("ubicacion")}
+              className="h-14 w-full rounded-[18px] bg-primary text-[16px] font-semibold text-white transition-colors hover:bg-primary-hover"
+            >
+              Comenzar
+            </button>
           </div>
-          <button
-            onClick={allowLocation}
-            className="h-14 w-full rounded-[18px] bg-primary text-[16px] font-semibold text-white transition-colors hover:bg-primary-hover"
-          >
-            Permitir ubicación
-          </button>
-          <button onClick={finish} className="h-12 w-full text-[15px] font-medium text-ink-muted">
-            Elegir zona a mano
-          </button>
-        </div>
+        ) : (
+          <div className="flex flex-col gap-3 lg:max-w-[380px]">
+            <div className="flex items-center gap-3 rounded-2xl bg-surface-muted p-3.5">
+              <Icon name="my_location" size={22} className="text-primary" />
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold">Ubicación mientras usás la app</span>
+                <span className="text-[12.5px] text-ink-soft">Nunca publicamos tu dirección exacta</span>
+              </div>
+            </div>
+            <button
+              onClick={allowLocation}
+              className="h-14 w-full rounded-[18px] bg-primary text-[16px] font-semibold text-white transition-colors hover:bg-primary-hover"
+            >
+              Permitir ubicación
+            </button>
+            <button onClick={finish} className="h-12 w-full text-[15px] font-medium text-ink-muted">
+              Elegir zona a mano
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="hidden lg:flex lg:h-dvh lg:items-center lg:justify-center lg:bg-[repeating-linear-gradient(135deg,#F2ECE3_0_14px,#EBE2D6_14px_28px)]">
