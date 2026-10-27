@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { usePublishStore } from "@/lib/store/publish-store";
 import { PrimaryButton, StepShell } from "./StepShell";
@@ -9,6 +9,7 @@ import { PrimaryButton, StepShell } from "./StepShell";
 export function Step1() {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const { type, photos, set, addPhotos, removePhoto } = usePublishStore();
 
   return (
@@ -77,14 +78,18 @@ export function Step1() {
         <p className="text-[12.5px] leading-relaxed text-ink-faint">
           Una foto de cuerpo entero y una de la cara ayudan a que el sistema encuentre coincidencias.
         </p>
+        {photoError && <p role="alert" className="text-[12.5px] text-lost">{photoError}</p>}
         <input
           ref={fileInput}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           multiple
           hidden
           onChange={(e) => {
-            if (e.target.files) addPhotos(Array.from(e.target.files));
+            if (e.target.files) {
+              const rejected = addPhotos(Array.from(e.target.files));
+              setPhotoError(rejected ? "Usá hasta 6 fotos JPG, PNG o WebP de máximo 5 MB cada una." : null);
+            }
             e.target.value = "";
           }}
         />

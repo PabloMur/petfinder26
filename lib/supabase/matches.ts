@@ -6,7 +6,6 @@ export type MatchCandidate = {
   name: string | null;
   species: Species;
   photos: string[];
-  address_label: string | null;
   seen_at: string;
   tags: string[];
 };
@@ -23,7 +22,7 @@ export type Match = {
   found: MatchCandidate;
 };
 
-const CANDIDATE_COLS = "id, name, species, photos, address_label, seen_at, tags";
+const CANDIDATE_COLS = "id, name, species, photos, seen_at, tags";
 
 export async function fetchMatchesForReport(reportId: string): Promise<Match[]> {
   const supabase = createClient();

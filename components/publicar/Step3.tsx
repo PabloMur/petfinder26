@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { Map as MapboxMap, type MapRef } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Icon } from "@/components/Icon";
+import { TurnstileWidget } from "@/components/TurnstileWidget";
 import { usePublishStore } from "@/lib/store/publish-store";
 import { publishReport } from "@/lib/supabase/publish";
 import { PrimaryButton, StepShell } from "./StepShell";
@@ -17,6 +18,9 @@ export function Step3() {
   const store = usePublishStore();
   const { location, addressLabel, seenDate, seenTime, contactWhatsapp, contactPhone, set, type, species, name, size, sex, tags, description, photos } = store;
   const [showPhone, setShowPhone] = useState(!!contactPhone);
+  const [contactPublicConsent, setContactPublicConsent] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileVersion, setTurnstileVersion] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +28,7 @@ export function Step3() {
     try {
       const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
       const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}&language=es&types=address,place,neighborhood`,
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}&language=es&types=place,locality,neighborhood,district`,
       );
       const json = await res.json();
       const label = json.features?.[0]?.place_name as string | undefined;
@@ -51,10 +55,23 @@ export function Step3() {
   }
 
   async function handleSubmit() {
-    if (!type || !species || !location || !contactWhatsapp.trim()) return;
+    if (!type || !species || !location || !contactWhatsapp.trim() || !contactPublicConsent || !turnstileToken) return;
     setSubmitting(true);
     setError(null);
     try {
+      const verificationResponse = await fetch("/api/publish/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: turnstileToken }),
+      });
+      const verificationResult = await verificationResponse.json();
+      if (!verificationResponse.ok) {
+        throw new Error(verificationResult.error ?? "No se pudo validar la publicación.");
+      }
+      if (typeof verificationResult.verificationId !== "string") {
+        throw new Error("No se pudo validar la publicación. Probá otra vez.");
+      }
+
       const { id } = await publishReport({
         type,
         species,
@@ -69,16 +86,18 @@ export function Step3() {
         seenAt: new Date(`${seenDate}T${seenTime}`).toISOString(),
         contactWhatsapp: contactWhatsapp.trim(),
         contactPhone: contactPhone.trim(),
-      });
+      }, verificationResult.verificationId);
       store.reset();
       router.push(`/reportes/${id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo publicar el reporte.");
+      setTurnstileToken(null);
+      setTurnstileVersion((version) => version + 1);
       setSubmitting(false);
     }
   }
 
-  const canSubmit = !!type && !!species && !!location && contactWhatsapp.trim().length > 0 && !submitting;
+  const canSubmit = !!type && !!species && !!location && contactWhatsapp.trim().length > 0 && contactPublicConsent && !!turnstileToken && !submitting;
 
   return (
     <StepShell
@@ -177,9 +196,26 @@ export function Step3() {
           </button>
         )}
 
-        <p className="text-[12.5px] leading-relaxed text-ink-faint">
-          Tu número se muestra solo cuando alguien toca &ldquo;Contactar&rdquo;. Podés ocultarlo cuando quieras.
-        </p>
+        <label className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-ink-soft">
+          <input
+            type="checkbox"
+            checked={contactPublicConsent}
+            onChange={(event) => setContactPublicConsent(event.target.checked)}
+            className="mt-0.5 size-4 flex-none accent-primary"
+          />
+          <span>Entiendo que mi WhatsApp quedará visible en la ficha pública para que puedan ayudar a reencontrar a la mascota.</span>
+        </label>
+        {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
+          <TurnstileWidget
+            key={turnstileVersion}
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+            onToken={setTurnstileToken}
+          />
+        ) : (
+          <p role="alert" className="text-[12.5px] text-lost">
+            La verificación antispam todavía no está configurada.
+          </p>
+        )}
       </div>
     </StepShell>
   );

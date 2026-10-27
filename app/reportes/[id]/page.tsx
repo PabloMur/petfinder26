@@ -4,24 +4,59 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { TurnstileWidget } from "@/components/TurnstileWidget";
 import { formatRelativeTime } from "@/lib/geo";
 import { isReportSaved, toggleSavedReport } from "@/lib/saved-reports";
 import { getClaimToken } from "@/lib/supabase/claim-token";
 import { closeReport, fetchReportDetail, type ReportDetail } from "@/lib/supabase/report-detail";
 
 const SPECIES_LABEL: Record<string, string> = { dog: "Perro", cat: "Gato", other: "Mascota" };
+type ContactInfo = { contactWhatsapp: string | null; contactPhone: string | null };
 
 export default function ReportDetailPage() {
   const { id } = useParams<{ id: string }>();
+  return <ReportDetailContent key={id} id={id} />;
+}
+
+function ReportDetailContent({ id }: { id: string }) {
   const [report, setReport] = useState<ReportDetail | null | undefined>(undefined);
   const [contactRevealed, setContactRevealed] = useState(false);
+  const [contactChallengeOpen, setContactChallengeOpen] = useState(false);
+  const [contactChallengeVersion, setContactChallengeVersion] = useState(0);
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
+  const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [closing, setClosing] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [downloadingPoster, setDownloadingPoster] = useState(false);
   const [saved, setSaved] = useState(() => isReportSaved(id));
 
   useEffect(() => {
-    fetchReportDetail(id).then(setReport);
+    let cancelled = false;
+    fetchReportDetail(id).then((data) => {
+      if (!cancelled) setReport(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  useEffect(() => {
+    const ownerClaimToken = getClaimToken(id);
+    if (!ownerClaimToken) return;
+    const controller = new AbortController();
+    fetch("/api/report/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reportId: id, claimToken: ownerClaimToken }),
+      signal: controller.signal,
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: ContactInfo | null) => {
+        if (data) setContactInfo(data);
+      })
+      .catch(() => {});
+    return () => controller.abort();
   }, [id]);
 
   if (report === undefined) {
@@ -36,8 +71,8 @@ export default function ReportDetailPage() {
   const claimToken = getClaimToken(id);
   const isOwner = claimToken !== null;
   const title = report.name ?? SPECIES_LABEL[report.species];
-  const whatsappHref = report.contact_whatsapp
-    ? `https://wa.me/${report.contact_whatsapp.replace(/[^\d]/g, "")}?text=${encodeURIComponent(
+  const whatsappHref = contactInfo?.contactWhatsapp
+    ? `https://wa.me/${contactInfo.contactWhatsapp.replace(/[^\d]/g, "")}?text=${encodeURIComponent(
         `Hola! Vi tu reporte de ${title} en Pet Finder.`,
       )}`
     : null;
@@ -63,10 +98,48 @@ export default function ReportDetailPage() {
     if (!report) return;
     setDownloadingPoster(true);
     try {
+      let ownerContacts = contactInfo;
+      if (!ownerContacts && claimToken) {
+        const response = await fetch("/api/report/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reportId: id, claimToken }),
+        });
+        if (!response.ok) throw new Error("No se pudieron cargar los datos de contacto.");
+        ownerContacts = (await response.json()) as ContactInfo;
+        setContactInfo(ownerContacts);
+      }
       const { downloadPoster } = await import("@/lib/pdf/poster");
-      await downloadPoster(report, window.location.href);
+      await downloadPoster({
+        ...report,
+        contact_whatsapp: ownerContacts?.contactWhatsapp ?? null,
+        contact_phone: ownerContacts?.contactPhone ?? null,
+      }, window.location.href);
     } finally {
       setDownloadingPoster(false);
+    }
+  }
+
+  async function revealVisitorContact(token: string | null) {
+    if (!token) return;
+    setContactLoading(true);
+    setContactError(null);
+    try {
+      const response = await fetch("/api/report/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportId: id, token }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "No se pudo cargar el contacto.");
+      setContactInfo(data as ContactInfo);
+      setContactRevealed(true);
+      setContactChallengeOpen(false);
+    } catch (e) {
+      setContactError(e instanceof Error ? e.message : "No se pudo cargar el contacto.");
+      setContactChallengeVersion((version) => version + 1);
+    } finally {
+      setContactLoading(false);
     }
   }
 
@@ -105,7 +178,14 @@ export default function ReportDetailPage() {
           title={title}
           whatsappHref={whatsappHref}
           revealed={contactRevealed}
-          onReveal={() => setContactRevealed(true)}
+          challengeOpen={contactChallengeOpen}
+          challengeVersion={contactChallengeVersion}
+          contactLoading={contactLoading}
+          contactError={contactError}
+          contactPhone={contactInfo?.contactPhone ?? null}
+          onReveal={() => setContactChallengeOpen(true)}
+          onCancelChallenge={() => setContactChallengeOpen(false)}
+          onContactToken={revealVisitorContact}
         />
       )}
     </div>
@@ -262,14 +342,28 @@ function VisitorView({
   report,
   title,
   whatsappHref,
+  contactPhone,
   revealed,
+  challengeOpen,
+  challengeVersion,
+  contactLoading,
+  contactError,
   onReveal,
+  onCancelChallenge,
+  onContactToken,
 }: {
   report: ReportDetail;
   title: string;
   whatsappHref: string | null;
+  contactPhone: string | null;
   revealed: boolean;
+  challengeOpen: boolean;
+  challengeVersion: number;
+  contactLoading: boolean;
+  contactError: string | null;
   onReveal: () => void;
+  onCancelChallenge: () => void;
+  onContactToken: (token: string | null) => void;
 }) {
   return (
     <div className="flex flex-col gap-5">
@@ -295,9 +389,27 @@ function VisitorView({
         </p>
       ) : !revealed ? (
         <div className="flex flex-col gap-2.5">
-          <button onClick={onReveal} className="h-14 w-full rounded-[18px] bg-primary text-[16px] font-semibold text-white">
-            Contactar
-          </button>
+          {challengeOpen ? (
+            <div className="flex flex-col items-center gap-2.5 rounded-2xl bg-surface-muted p-4">
+              {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
+                <TurnstileWidget
+                  key={challengeVersion}
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                  action="contact"
+                  onToken={onContactToken}
+                />
+              ) : (
+                <p className="text-center text-[13px] text-lost">La verificación antispam todavía no está configurada.</p>
+              )}
+              {contactLoading && <span className="text-[13px] text-ink-soft">Cargando contacto…</span>}
+              {contactError && <p role="alert" className="text-center text-[13px] text-lost">{contactError}</p>}
+              <button onClick={onCancelChallenge} className="text-[13px] font-medium text-ink-muted">Cancelar</button>
+            </div>
+          ) : (
+            <button onClick={onReveal} className="h-14 w-full rounded-[18px] bg-primary text-[16px] font-semibold text-white">
+              Contactar
+            </button>
+          )}
           {report.type === "lost" && (
             <Link
               href={`/reportes/${report.id}/avistajes`}
@@ -321,14 +433,19 @@ function VisitorView({
               Escribir por WhatsApp
             </a>
           )}
-          {report.contact_phone && (
+          {contactPhone && (
             <a
-              href={`tel:${report.contact_phone}`}
+              href={`tel:${contactPhone}`}
               className="flex h-14 items-center justify-center gap-2.5 rounded-[18px] border border-ink/[0.14] text-[15px] font-semibold"
             >
               <Icon name="call" size={20} />
               Llamar
             </a>
+          )}
+          {!whatsappHref && !contactPhone && (
+            <p className="rounded-2xl bg-surface-muted p-4 text-center text-[14px] text-ink-muted">
+              El tutor no agregó datos de contacto para este reporte.
+            </p>
           )}
         </div>
       )}

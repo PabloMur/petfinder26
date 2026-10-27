@@ -21,7 +21,7 @@ export async function fetchMyReports(ids: string[]): Promise<MyReport[]> {
 
   const [{ data: reports, error: reportsError }, { data: matches, error: matchesError }] =
     await Promise.all([
-      supabase.from("reports").select(COLUMNS).in("id", ids),
+      supabase.from("reports_public").select(COLUMNS).in("id", ids),
       supabase
         .from("matches")
         .select("lost_report_id, found_report_id")

@@ -35,8 +35,14 @@ supabase/
 
 Publicar un reporte no requiere cuenta. Cada reporte anónimo lleva un `claim_token`
 (UUID) generado en el cliente y guardado en `localStorage` — es lo que te deja
-editar o cerrar tu propio caso sin login. Crear una cuenta (magic link por email)
-es opcional y solo suma sincronizar reportes entre dispositivos.
+editar o cerrar tu propio caso sin login. El acceso con cuenta y la sincronización
+entre dispositivos todavía no están implementados; los reportes se gestionan desde
+el navegador donde se publicaron.
+
+Las ubicaciones públicas se muestran aproximadas. Los datos de contacto no se
+incluyen en la respuesta pública de reportes: la persona que publica autoriza
+mostrarlos y los visitantes deben superar Turnstile al tocar «Contactar». Las
+fotos admitidas son JPG, PNG o WebP, de hasta 5 MB cada una y seis por publicación.
 
 ## Setup local
 
@@ -45,6 +51,12 @@ npm install
 cp .env.local.example .env.local   # completar con las credenciales de tu proyecto Supabase
 npm run dev
 ```
+
+Para habilitar publicaciones, creá un widget Turnstile y configurá su site key
+en `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, su secret en `TURNSTILE_SECRET_KEY`, los
+hostnames permitidos en `TURNSTILE_ALLOWED_HOSTNAMES` (separados por coma) y la
+clave secreta de Supabase en `SUPABASE_SECRET_KEY`. La clave secreta de Supabase
+y el secret de Turnstile son solo del servidor: no uses el prefijo `NEXT_PUBLIC_`.
 
 Aplicar el esquema: pegar el contenido de `supabase/migrations/*.sql`, en orden,
 en el SQL Editor de tu proyecto Supabase (o usar `supabase db push` con el CLI).

@@ -18,13 +18,16 @@ export type PublishInput = {
   contactPhone: string;
 };
 
-export async function publishReport(input: PublishInput): Promise<{ id: string }> {
+export async function publishReport(
+  input: PublishInput,
+  publishVerificationId: string,
+): Promise<{ id: string }> {
   const supabase = createClient();
   const claimToken = generateClaimToken();
 
   const photoUrls = await Promise.all(
     input.photos.map(async ({ file }) => {
-      const path = `${claimToken}/${crypto.randomUUID()}-${file.name}`;
+      const path = `${publishVerificationId}/${crypto.randomUUID()}-${file.name}`;
       const { error } = await supabase.storage.from("report-photos").upload(path, file);
       if (error) throw error;
       return supabase.storage.from("report-photos").getPublicUrl(path).data.publicUrl;
@@ -50,6 +53,7 @@ export async function publishReport(input: PublishInput): Promise<{ id: string }
       contact_whatsapp: input.contactWhatsapp,
       contact_phone: input.contactPhone || null,
       claim_token: claimToken,
+      publish_verification_id: publishVerificationId,
     })
     .select("id")
     .single();

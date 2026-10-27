@@ -21,7 +21,7 @@ type PublishData = {
 
 type PublishStore = PublishData & {
   set: (patch: Partial<PublishData>) => void;
-  addPhotos: (files: File[]) => void;
+  addPhotos: (files: File[]) => number;
   removePhoto: (index: number) => void;
   toggleTag: (tag: string) => void;
   reset: () => void;
@@ -52,11 +52,15 @@ export const usePublishStore = create<PublishStore>((set, get) => ({
   set: (patch) => set(patch),
   addPhotos: (files) => {
     const room = 6 - get().photos.length;
-    const next = files.slice(0, room).map((file) => ({
+    const accepted = files
+      .filter((file) => ["image/jpeg", "image/png", "image/webp"].includes(file.type) && file.size <= 5 * 1024 * 1024)
+      .slice(0, room);
+    const next = accepted.map((file) => ({
       file,
       previewUrl: URL.createObjectURL(file),
     }));
     set({ photos: [...get().photos, ...next] });
+    return files.length - accepted.length;
   },
   removePhoto: (index) => {
     const photos = [...get().photos];

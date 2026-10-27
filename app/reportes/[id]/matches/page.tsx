@@ -124,11 +124,6 @@ export default function MatchesPage() {
                     {other.report.tags[0] && (
                       <span className="truncate text-[13.5px] text-ink-soft">{other.report.tags.join(" · ")}</span>
                     )}
-                    {other.report.address_label && (
-                      <span className="truncate text-[13px] font-medium text-ink-muted">
-                        {other.report.address_label}
-                      </span>
-                    )}
                   </div>
                 </div>
 
