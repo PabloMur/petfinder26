@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/client";
-import type { ReportType, Species } from "@/lib/supabase/reports";
+import { api } from "@/lib/data/http";
+import type { ReportType, Species } from "@/lib/data/reports";
 
 export type ReportDetail = {
   id: string;
@@ -21,22 +21,14 @@ export type ReportDetail = {
   created_at: string;
 };
 
-const COLUMNS =
-  "id, type, species, size, sex, name, tags, description, photos, address_label, radius_m, seen_at, status, closed_reason, created_at";
-
 export async function fetchReportDetail(id: string): Promise<ReportDetail | null> {
-  const supabase = createClient();
-  const { data, error } = await supabase.from("reports_public").select(COLUMNS).eq("id", id).single();
-  if (error) return null;
-  return data;
+  try {
+    return await api<ReportDetail>(`/api/reports/${encodeURIComponent(id)}`);
+  } catch {
+    return null;
+  }
 }
 
 export async function closeReport(id: string, claimToken: string, reason: "reunion" | "other") {
-  const supabase = createClient();
-  const { error } = await supabase.rpc("close_report", {
-    p_report_id: id,
-    p_claim_token: claimToken,
-    p_reason: reason,
-  });
-  if (error) throw error;
+  await api(`/api/reports/${encodeURIComponent(id)}/close`, { claimToken, reason });
 }

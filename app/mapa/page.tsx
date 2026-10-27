@@ -9,7 +9,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { SidebarNav } from "@/components/SidebarNav";
 import { ReportPin } from "@/components/ReportCard";
 import { distanceMeters, formatRelativeTime } from "@/lib/geo";
-import { fetchActiveReports, type ReportMapPoint } from "@/lib/supabase/reports";
+import { fetchActiveReports, type ReportMapPoint } from "@/lib/data/reports";
 import { isDefaultFilters, useMapFilters, type StatusFilter } from "@/lib/store/map-filters";
 
 const VICENTE_LOPEZ = { longitude: -58.49, latitude: -34.527 };

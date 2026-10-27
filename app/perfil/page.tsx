@@ -8,8 +8,8 @@ import { EmptyState } from "@/components/EmptyState";
 import { Icon } from "@/components/Icon";
 import { ReportListCard } from "@/components/ReportListCard";
 import { getSavedReportIds } from "@/lib/saved-reports";
-import { getMyReportIds } from "@/lib/supabase/claim-token";
-import { fetchMyReports, type MyReport } from "@/lib/supabase/my-reports";
+import { getMyReportIds } from "@/lib/claim-token";
+import { fetchMyReports, type MyReport } from "@/lib/data/my-reports";
 
 type Tab = "mine" | "saved";
 

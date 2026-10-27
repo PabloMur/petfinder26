@@ -6,7 +6,7 @@ import { SidebarNav } from "@/components/SidebarNav";
 import { EmptyState } from "@/components/EmptyState";
 import { ReportListCard } from "@/components/ReportListCard";
 import { getSavedReportIds } from "@/lib/saved-reports";
-import { fetchMyReports, type MyReport } from "@/lib/supabase/my-reports";
+import { fetchMyReports, type MyReport } from "@/lib/data/my-reports";
 
 export default function GuardadosPage() {
   const [reports, setReports] = useState<MyReport[] | null>(null);

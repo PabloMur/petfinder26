@@ -1,16 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
+import { db } from "@/lib/server/db";
 import { verifyTurnstileToken } from "@/lib/server/turnstile";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseSecret = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseSecret) {
-    return Response.json({ error: "La verificación antispam no está configurada." }, { status: 503 });
-  }
-
   let body: { token?: unknown };
   try {
     body = await request.json();
@@ -27,18 +20,11 @@ export async function POST(request: Request) {
     return Response.json({ error: verified.error }, { status: verified.status });
   }
 
-  const supabase = createClient(supabaseUrl, supabaseSecret, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-  });
-  await supabase
-    .from("publish_verifications")
-    .delete()
-    .lt("expires_at", new Date().toISOString());
-
   const verificationId = crypto.randomUUID();
-  const { error } = await supabase.from("publish_verifications").insert({ id: verificationId });
-
-  if (error) {
+  try {
+    await db.query("delete from publish_verifications where expires_at < now()");
+    await db.query("insert into publish_verifications (id) values ($1)", [verificationId]);
+  } catch {
     return Response.json({ error: "No se pudo preparar la publicación." }, { status: 503 });
   }
 

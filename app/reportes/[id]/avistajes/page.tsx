@@ -7,8 +7,8 @@ import { Map as MapboxMap, Layer, Source } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Icon } from "@/components/Icon";
 import { formatRelativeTime } from "@/lib/geo";
-import { fetchReportDetail, type ReportDetail } from "@/lib/supabase/report-detail";
-import { createSighting, fetchSightings, type Sighting } from "@/lib/supabase/sightings";
+import { fetchReportDetail, type ReportDetail } from "@/lib/data/report-detail";
+import { createSighting, fetchSightings, type Sighting } from "@/lib/data/sightings";
 
 const SPECIES_LABEL: Record<string, string> = { dog: "Perro", cat: "Gato", other: "Mascota" };
 

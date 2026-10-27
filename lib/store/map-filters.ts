@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Species } from "@/lib/supabase/reports";
+import type { Species } from "@/lib/data/reports";
 
 export type StatusFilter = "all" | "lost" | "found";
 export type DateFilter = "today" | "7d" | "30d";

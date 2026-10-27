@@ -7,8 +7,8 @@ import { Icon } from "@/components/Icon";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
 import { formatRelativeTime } from "@/lib/geo";
 import { isReportSaved, toggleSavedReport } from "@/lib/saved-reports";
-import { getClaimToken } from "@/lib/supabase/claim-token";
-import { closeReport, fetchReportDetail, type ReportDetail } from "@/lib/supabase/report-detail";
+import { getClaimToken } from "@/lib/claim-token";
+import { closeReport, fetchReportDetail, type ReportDetail } from "@/lib/data/report-detail";
 
 const SPECIES_LABEL: Record<string, string> = { dog: "Perro", cat: "Gato", other: "Mascota" };
 type ContactInfo = { contactWhatsapp: string | null; contactPhone: string | null };

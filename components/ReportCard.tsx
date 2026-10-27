@@ -1,6 +1,6 @@
 import { Icon } from "@/components/Icon";
 import { formatDistance, formatRelativeTime } from "@/lib/geo";
-import type { ReportMapPoint } from "@/lib/supabase/reports";
+import type { ReportMapPoint } from "@/lib/data/reports";
 
 const TYPE_LABEL: Record<ReportMapPoint["type"], string> = {
   lost: "PERDIDA",

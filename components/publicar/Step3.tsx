@@ -7,7 +7,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { Icon } from "@/components/Icon";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
 import { usePublishStore } from "@/lib/store/publish-store";
-import { publishReport } from "@/lib/supabase/publish";
+import { publishReport } from "@/lib/data/publish";
 import { PrimaryButton, StepShell } from "./StepShell";
 
 const DEFAULT_CENTER = { longitude: -58.49, latitude: -34.527 };

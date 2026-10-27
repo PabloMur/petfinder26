@@ -5,8 +5,8 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { formatRelativeTime } from "@/lib/geo";
-import { getClaimToken } from "@/lib/supabase/claim-token";
-import { fetchMatchesForReport, otherSide, updateMatchStatus, type Match } from "@/lib/supabase/matches";
+import { getClaimToken } from "@/lib/claim-token";
+import { fetchMatchesForReport, otherSide, updateMatchStatus, type Match } from "@/lib/data/matches";
 
 const SPECIES_LABEL: Record<string, string> = { dog: "Perro", cat: "Gato", other: "Mascota" };
 const ATTR_LABEL: Record<string, string> = {

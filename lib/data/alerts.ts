@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/data/http";
 
 export type Alert = {
   id: string;
@@ -11,18 +11,10 @@ export type Alert = {
 
 export async function fetchMyAlerts(claimTokens: string[]): Promise<Alert[]> {
   if (claimTokens.length === 0) return [];
-  const supabase = createClient();
-  const { data, error } = await supabase.rpc("get_my_alerts", { p_claim_tokens: claimTokens });
-  if (error) throw error;
-  return data;
+  return api<Alert[]>("/api/alerts", { claimTokens });
 }
 
 export async function markAlertsRead(alertIds: string[], claimTokens: string[]): Promise<void> {
   if (alertIds.length === 0 || claimTokens.length === 0) return;
-  const supabase = createClient();
-  const { error } = await supabase.rpc("mark_alerts_read", {
-    p_alert_ids: alertIds,
-    p_claim_tokens: claimTokens,
-  });
-  if (error) throw error;
+  await api("/api/alerts/read", { alertIds, claimTokens });
 }

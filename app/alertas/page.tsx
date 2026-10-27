@@ -6,8 +6,8 @@ import { BottomNav } from "@/components/BottomNav";
 import { SidebarNav } from "@/components/SidebarNav";
 import { Icon } from "@/components/Icon";
 import { formatRelativeTime } from "@/lib/geo";
-import { fetchMyAlerts, markAlertsRead, type Alert } from "@/lib/supabase/alerts";
-import { getMyClaimTokens } from "@/lib/supabase/claim-token";
+import { fetchMyAlerts, markAlertsRead, type Alert } from "@/lib/data/alerts";
+import { getMyClaimTokens } from "@/lib/claim-token";
 
 const TYPE_META: Record<Alert["type"], { icon: string; bg: string; color: string; title: string }> = {
   match: { icon: "join_inner", bg: "bg-primary/[0.12]", color: "text-primary", title: "Coincidencia encontrada" },

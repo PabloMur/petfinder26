@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { useMapFilters, type DateFilter, type StatusFilter } from "@/lib/store/map-filters";
-import type { Species } from "@/lib/supabase/reports";
+import type { Species } from "@/lib/data/reports";
 
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "Todo" },

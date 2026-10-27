@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/data/http";
 
 export type ReportType = "lost" | "found";
 export type Species = "dog" | "cat" | "other";
@@ -21,12 +21,5 @@ export type ReportMapPoint = {
 };
 
 export async function fetchActiveReports(): Promise<ReportMapPoint[]> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("reports_map")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return api<ReportMapPoint[]>("/api/reports");
 }

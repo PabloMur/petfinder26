@@ -1,5 +1,5 @@
 import { Document, Page, View, Text, Image, StyleSheet, Font } from "@react-pdf/renderer";
-import type { ReportDetail } from "@/lib/supabase/report-detail";
+import type { ReportDetail } from "@/lib/data/report-detail";
 
 // Helvetica / Helvetica-Bold are built into react-pdf — no Font.register needed.
 // Default hyphenation breaks mid-word ("comple-to") on a poster meant to be

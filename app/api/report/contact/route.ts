@@ -1,17 +1,10 @@
-import { createClient } from "@supabase/supabase-js";
+import { db } from "@/lib/server/db";
 import { verifyTurnstileToken } from "@/lib/server/turnstile";
+import { UUID } from "@/lib/server/validation";
 
 export const runtime = "nodejs";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 export async function POST(request: Request) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseSecret = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !supabaseSecret) {
-    return Response.json({ error: "El contacto no está disponible." }, { status: 503 });
-  }
-
   let body: { reportId?: unknown; claimToken?: unknown; token?: unknown };
   try {
     body = await request.json();
@@ -34,27 +27,23 @@ export async function POST(request: Request) {
     }
   }
 
-  const supabase = createClient(supabaseUrl, supabaseSecret, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-  });
-  let query = supabase
-    .from("reports")
-    .select("status, claim_token, contact_whatsapp, contact_phone")
-    .eq("id", body.reportId);
-
-  if (isOwner) {
-    query = query.eq("claim_token", body.claimToken as string);
-  } else {
-    query = query.eq("status", "active");
-  }
-
-  const { data, error } = await query.maybeSingle();
-  if (error || !data) {
+  // Owners see their own contact details on any of their reports; everyone
+  // else only on active ones, after passing the Turnstile challenge above.
+  const { rows } = isOwner
+    ? await db.query(
+        "select contact_whatsapp, contact_phone from reports where id = $1 and claim_token = $2",
+        [body.reportId, body.claimToken],
+      )
+    : await db.query(
+        "select contact_whatsapp, contact_phone from reports where id = $1 and status = 'active'",
+        [body.reportId],
+      );
+  if (rows.length === 0) {
     return Response.json({ error: "No encontramos ese reporte." }, { status: 404 });
   }
 
   return Response.json(
-    { contactWhatsapp: data.contact_whatsapp, contactPhone: data.contact_phone },
+    { contactWhatsapp: rows[0].contact_whatsapp, contactPhone: rows[0].contact_phone },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

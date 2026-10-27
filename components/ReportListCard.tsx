@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { formatRelativeTime } from "@/lib/geo";
-import type { MyReport } from "@/lib/supabase/my-reports";
+import type { MyReport } from "@/lib/data/my-reports";
 
 const SPECIES_LABEL: Record<string, string> = { dog: "Perro", cat: "Gato", other: "Mascota" };
 

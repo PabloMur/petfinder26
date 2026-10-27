@@ -1,9 +1,9 @@
 const STORAGE_KEY = "pet-finder:my-reports";
 
 // Anonymous publishers own their report via a random token minted client-side
-// and never sent back by the server (see migration 0004) — this is the only
+// and never sent back by the server (see db/schema.sql) — this is the only
 // place it lives, mapped by report id so a later visit can tell "is this
-// mine?" and, if so, pass the token to close_report() to edit/close it.
+// mine?" and, if so, pass the token to /api/reports/[id]/close to close it.
 function getMap(): Record<string, string> {
   if (typeof window === "undefined") return {};
   try {

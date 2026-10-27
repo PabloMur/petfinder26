@@ -6,17 +6,19 @@ El diseño de referencia (13 pantallas) está en [`design/mockup.html`](design/m
 
 ## Stack
 
-- **Next.js 15** (App Router) + TypeScript + Tailwind CSS
-- **Supabase** — Postgres + PostGIS, Auth, Storage, Realtime
+- **Next.js 16** (App Router) + TypeScript + Tailwind CSS
+- **Neon** — Postgres + PostGIS, consultado solo desde los route handlers (`pg`)
+- **Vercel Blob** — fotos de los reportes, subidas directo desde el navegador
 - **Mapbox GL JS** (`react-map-gl`) — mapa y heatmap
 - **React Hook Form + Zod** — flujo de publicación en 3 pasos
 - **`@react-pdf/renderer` + `qrcode`** — cartel imprimible, generado en el cliente
-- Desplegado en **Vercel** (frontend) + **Supabase Cloud** (backend), ambos free tier
+- Desplegado en **Vercel**, con Neon y Blob conectados desde el Marketplace (free tier)
 
 ## Estructura
 
 ```
 app/
+  api/               route handlers: el único acceso a la base (lectura y escritura)
   (onboarding)/     pantalla 1
   mapa/              pantallas 2, 3, 4 (mapa, filtros, heatmap)
   publicar/[paso]/   pantallas 5, 6, 7 (flujo de 3 pasos)
@@ -24,11 +26,13 @@ app/
   alertas/           pantalla 11
   perfil/            pantalla 12
 lib/
-  supabase/          clientes browser/server + manejo de claim tokens anónimos
+  data/              funciones del cliente que llaman a app/api
+  server/            conexión a Neon, validación y Turnstile (solo servidor)
+  claim-token.ts     manejo de claim tokens anónimos en localStorage
   matching/          lógica de scoring en el cliente (espejo del SQL)
   pdf/               generador del cartel
-supabase/
-  migrations/        esquema SQL (PostGIS, RLS, función de matching)
+db/
+  schema.sql         esquema SQL (PostGIS, vistas públicas, matching)
 ```
 
 ## Cómo funciona el modelo de dueño anónimo
@@ -39,7 +43,9 @@ editar o cerrar tu propio caso sin login. El acceso con cuenta y la sincronizaci
 entre dispositivos todavía no están implementados; los reportes se gestionan desde
 el navegador donde se publicaron.
 
-Las ubicaciones públicas se muestran aproximadas. Los datos de contacto no se
+El navegador nunca habla con la base: todo pasa por `app/api`, que es donde se
+controla quién puede leer o cambiar qué. Las ubicaciones públicas se muestran
+aproximadas (redondeadas a ~100 m). Los datos de contacto no se
 incluyen en la respuesta pública de reportes: la persona que publica autoriza
 mostrarlos y los visitantes deben superar Turnstile al tocar «Contactar». Las
 fotos admitidas son JPG, PNG o WebP, de hasta 5 MB cada una y seis por publicación.
@@ -48,15 +54,13 @@ fotos admitidas son JPG, PNG o WebP, de hasta 5 MB cada una y seis por publicaci
 
 ```bash
 npm install
-cp .env.local.example .env.local   # completar con las credenciales de tu proyecto Supabase
+vercel link && vercel env pull .env.local   # trae DATABASE_URL y BLOB_READ_WRITE_TOKEN
+npm run db:schema                            # solo la primera vez, sobre una base vacía
 npm run dev
 ```
 
 Para habilitar publicaciones, creá un widget Turnstile y configurá su site key
 en `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, su secret en `TURNSTILE_SECRET_KEY`, los
-hostnames permitidos en `TURNSTILE_ALLOWED_HOSTNAMES` (separados por coma) y la
-clave secreta de Supabase en `SUPABASE_SECRET_KEY`. La clave secreta de Supabase
-y el secret de Turnstile son solo del servidor: no uses el prefijo `NEXT_PUBLIC_`.
-
-Aplicar el esquema: pegar el contenido de `supabase/migrations/*.sql`, en orden,
-en el SQL Editor de tu proyecto Supabase (o usar `supabase db push` con el CLI).
+hostnames permitidos en `TURNSTILE_ALLOWED_HOSTNAMES` (separados por coma). El
+secret de Turnstile y las credenciales de Neon y Blob son solo del servidor: no
+uses el prefijo `NEXT_PUBLIC_`.
